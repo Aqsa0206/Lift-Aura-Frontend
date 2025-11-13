@@ -2,17 +2,41 @@ import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
-function Update() {
+const FormInput = ({ label, name, type, value, onChange }) => (
+  <div>
+    <label>{label}:</label>
+    <input type={type} name={name} value={value} onChange={onChange} />
+  </div>
+);
+
+
+const Update = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [member, setMember] = useState([]);
+  const [member, setMember] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone_number: '',
+    cnic: ''
+  });
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/v1/members/${id}`)
-    .then((response) => response.json())
-    .then((data) => setMember(data))
-    .catch((error) => console.error("Error fetching member:", error));
-  }, [id]);
+    const fetchMember = async () => {
+			try {
+				const response = await fetch(`http://localhost:3000/api/v1/members/${id}`);
+				if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+				}
+				const data = await response.json();
+				setMember(data);
+			} catch (error) {
+				console.error("Error fetching member:", error);
+				}
+    };
+
+    fetchMember();
+	}, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,54 +58,28 @@ function Update() {
       .catch((err) => console.error('Error updating member:', err));
   };
 
+  const fields = [
+    { label: "First Name", name: "first_name", type: "text" },
+    { label: "Last Name", name: "last_name", type: "text" },
+    { label: "Email", name: "email", type: "email" },
+    { label: "Phone Number", name: "phone_number", type: "text" },
+    { label: "CNIC", name: "cnic", type: "text" },
+  ];
+
+
   return (
     <div>
         <form onSubmit={handleSubmit}>
-            <div>
-            <label>First Name: </label>
-            <input
-                type="text"
-                name="first_name"
-                value={member.first_name}
+            {fields.map((field) => (
+            <FormInput
+                key={field.name}
+                label={field.label}
+                name={field.name}
+                type={field.type}
+                value={member[field.name]}
                 onChange={handleChange}
             />
-            </div>
-            <div>
-            <label>Last Name: </label>
-            <input
-                type="text"
-                name="last_name"
-                value={member.last_name}
-                onChange={handleChange}
-            />
-            </div>
-            <div>
-            <label>Email: </label>
-            <input
-                type="email"
-                name="email"
-                value={member.email}
-                onChange={handleChange}
-            />
-            </div>
-            <div>
-            <label>Phone: </label>
-            <input
-                type="text"
-                name="phone_number"
-                value={member.phone_number}
-                onChange={handleChange}
-            />
-            </div>
-            <div>
-            <label>CNIC: </label>
-            <input
-                type="text"
-                name="cnic"
-                value={member.cnic}
-                onChange={handleChange}
-            />
-            </div>
+            ))}
             <button type="submit">Update Member</button>
         </form>
     </div>

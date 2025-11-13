@@ -19,12 +19,16 @@ function App() {
     fetch(`http://localhost:3000/api/v1/members/${id}`, {
       method: 'DELETE',
     })
-      .then((res) => res.json())
-      .then(() => {
-        setMembers((prevMembers) => prevMembers.filter((m) => m.id !== id));
-      })
-      .catch((err) => console.error("Error deleting member:", err));
-  };
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error('Failed to delete member');
+      }
+      setMembers((prevMembers) => prevMembers.filter((m) => m.id !== id));
+    })
+    .catch((err) => {
+      console.error("Error deleting member:", err);
+    });
+  }
 
   return (
 
@@ -56,4 +60,3 @@ function App() {
 }
 
 export default App;
-
